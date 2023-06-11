@@ -53,13 +53,19 @@ function App(props) {
     setComponentsTree(componentsTree.deleteChild(indexes));
   }
 
-  function addChild(indexes) {
-    setComponentsTree(componentsTree.addChild(indexes));
+  function addChild(cType, indexes) {
+    setComponentsTree(componentsTree.addChild(cType, indexes));
   }
 
   // console.log(componentsTree);
 
   return html`<div tw="bg-gray-700 h-screen flex">
+    <button
+      tw="fixed bottom-0 right-0 bg-red-400 hover:bg-red-300 text-white px-2 py-1 rounded-md mr-1 mb-1"
+      onClick=${() => resetPersistentState()}
+    >
+      Reset state
+    </button>
     <div tw="bg-gray-100 border-r-2 border-gray-200 w-1/2 p-4 flex flex-col">
       <div
         tw="text-center mb-2 uppercase tracking-wide font-bold text-gray-600"
@@ -76,32 +82,38 @@ function App(props) {
   </div>`;
 
   function renderComponentControls(comp, indexes) {
+    const baseComponent = ComponentTree.baseComponents[comp.cType];
+    const slotsLeft = baseComponent.childrenSlots - comp.children.length;
+
     return html`<div>
-      <button
-        tw="fixed bottom-0 right-0 bg-red-400 hover:bg-red-300 text-white px-2 py-1 rounded-md mr-1 mb-1"
-        onClick=${() => resetPersistentState()}
-      >
-        Reset state
-      </button>
-      <div tw="flex">
-        <div
-          tw="bg-green-400 rounded-md px-1 py-0.5 text-white uppercase mr-1 text-sm"
-        >
-          ${comp.cType}
-        </div>
+      <div tw="flex space-x-1 h-8">
         <button
-          tw="bg-red-400 hover:bg-red-500 w-6 rounded-md px-1 py-0.5 mr-2 text-white"
+          tw="bg-red-400 hover:bg-red-500 w-8 rounded-md px-1 py-0.5 text-white pb-1"
           onClick=${() => removeComponent(indexes)}
         >
           ×
         </button>
-        <button
-          tw="bg-yellow-400 hover:bg-yellow-500 w-6 rounded-md px-1 py-0.5 mr-2 text-white scale-x-[-1]"
-          onClick=${() => addChild(indexes)}
+        <div
+          tw="bg-green-400 rounded-md px-1 py-0.5 w-16 text-white uppercase text-xs flex items-center justify-center"
         >
-          ↵
-        </button>
-        <div tw="flex-grow flex">
+          ${comp.cType}
+        </div>
+
+        ${slotsLeft > 0
+          ? html`<button
+                tw="bg-yellow-400 hover:bg-yellow-500 w-8 rounded-md px-1 py-0.5 text-white scale-x-[-1]"
+                onClick=${() => addChild("box", indexes)}
+              >
+                ↵
+              </button>
+              <button
+                tw="bg-blue-400 hover:bg-blue-500 w-8 rounded-md px-1 py-0.5 text-white text-xs"
+                onClick=${() => addChild("text", indexes)}
+              >
+                Aa
+              </button>`
+          : null}
+        <div tw="flex-grow flex ml-1">
           ${ComponentTree.baseComponents[comp.cType].renderControl(
             comp.props,
             (newProps) => handleComponentPropsUpdate(newProps, indexes)
@@ -110,7 +122,7 @@ function App(props) {
       </div>
 
       ${comp.children.length
-        ? html`<div tw="pl-4 space-y-2 pt-2">
+        ? html`<div tw="pl-8 space-y-2 pt-2">
             ${comp.children.map((comp, i) =>
               renderComponentControls(comp, [...indexes, i])
             )}
