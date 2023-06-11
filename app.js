@@ -11,38 +11,19 @@ import {
 import { usePersistentState } from "./hooks.js";
 import ComponentTree from "./lib/ComponentTree.js";
 
-// const ComponentDefinitionSchema = z.object({
-//   componentType: z.string(),
-//   props: z.object({})
-// });
-
 function App(props) {
-  // const [reusableComponents, setReusableComponents] = usePersistentState(
-  //   "reusableComponents",
-  //   ComponentbaseComponents
-  // );
   const [componentsTree, setComponentsTree] = usePersistentState(
     "components_tree",
-    () => ComponentTree.build(),
+    () => ComponentTree.demo(),
     (v) => v,
     ComponentTree.fromObject
   );
 
-  const [components, setComponents] = usePersistentState("components", []);
-
   function resetPersistentState() {
-    setComponents([]);
-    setComponentsTree(ComponentTree.build());
-    // setReusableComponents(baseComponents);
-  }
-
-  function addComponent(componentType) {
-    const newComponentDefinition = {
-      cType: componentType,
-      props: {},
-      children: [],
-    };
-    setComponents([...components, newComponentDefinition]);
+    console.log("Removing");
+    localStorage.removeItem("components_editor_components_tree");
+    console.log("Reloaded?");
+    window.location.reload();
   }
 
   function handleComponentPropsUpdate(newProps, indexes) {
