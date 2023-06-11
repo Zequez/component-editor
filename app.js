@@ -12,10 +12,10 @@ import { usePersistentState } from "./hooks.js";
 const baseComponents = {
   box: {
     render: (props, children) => html`<div tw=${props.tw}>Box</div>`,
-    renderControl: (props, setProps) => html`<div>
+    renderControl: (props, setProps) => html`<div tw="flex-grow">
       <input
         type="text"
-        tw="bg-white rounded-md text-sm px-1 py-0.5 border border-gray-300"
+        tw="bg-white rounded-md text-sm px-1 py-0.5 border border-gray-300 w-full"
         placeholder="Style directives"
         value=${props.tw}
         onInput=${(ev) => setProps({ tw: ev.target.value })}
@@ -55,6 +55,13 @@ function App(props) {
     console.log("Changing component props", index, newProps, newComponents);
   }
 
+  function removeComponent(index) {
+    setComponents([
+      ...components.slice(0, index),
+      ...components.slice(index + 1),
+    ]);
+  }
+
   return html`<div tw="bg-gray-700 h-screen flex">
     <div tw="bg-gray-100 border-r-2 border-gray-200 w-1/2 p-4">
       <div
@@ -74,11 +81,17 @@ function App(props) {
           ({ cType, props, children }, i) =>
             html`<div tw="flex">
               <div
-                tw="bg-green-400 rounded-md px-1 py-0.5 text-white uppercase mr-2 text-sm"
+                tw="bg-green-400 rounded-md px-1 py-0.5 text-white uppercase mr-1 text-sm"
               >
                 ${cType}
               </div>
-              <div tw="flex-stretch flex">
+              <button
+                tw="bg-red-400 hover:bg-red-500 w-6 rounded-md px-1 py-0.5 mr-2 text-white"
+                onClick=${() => removeComponent(i)}
+              >
+                ×
+              </button>
+              <div tw="flex-grow flex">
                 ${reusableComponents[cType].renderControl(props, (newProps) =>
                   handleComponentPropsUpdate(i, newProps)
                 )}
