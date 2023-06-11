@@ -1,14 +1,8 @@
-# Email Signature Builder
+# Components Editor
 
-![Alt text](/screenshot.png?raw=true "App UI screenshot")
+<!-- ![Alt text](/screenshot.png?raw=true "App UI screenshot") -->
 
-A tool to customize email signatures templates.
-
-Funded by a client. Now free for everyone.
-
-I may extend it into a white-label thing.
-
-It's in spanish, yes.
+A visual components editor that runs on Preact and Twind
 
 ## License
 
