@@ -59,25 +59,42 @@ function App(props) {
 
   // console.log(componentsTree);
 
-  return html`<div tw="bg-gray-700 h-screen flex">
+  return html`<div tw="bg-gray-100 h-screen flex flex-col">
     <button
       tw="fixed bottom-0 right-0 bg-red-400 hover:bg-red-300 text-white px-2 py-1 rounded-md mr-1 mb-1"
       onClick=${() => resetPersistentState()}
     >
       Reset state
     </button>
-    <div tw="bg-gray-100 border-r-2 border-gray-200 w-1/2 p-4 flex flex-col">
-      <div
-        tw="text-center mb-2 uppercase tracking-wide font-bold text-gray-600"
-      >
-        Page Preview
+    <div tw="flex flex-grow">
+      <div tw="bg-gray-100 border-r-2 border-gray-200 w-1/2 p-4 flex flex-col">
+        <div
+          tw="text-center mb-2 uppercase tracking-wide font-bold text-gray-600"
+        >
+          Page Preview
+        </div>
+        <div tw="bg-white shadow-md border border-gray-300 flex-grow">
+          ${ComponentTree.render(componentsTree)}
+        </div>
       </div>
-      <div tw="bg-white shadow-md border border-gray-300 flex-grow">
-        ${ComponentTree.render(componentsTree)}
+      <div tw="bg-gray-100 p-4 w-1/2">
+        <div>${renderComponentControls(componentsTree, [])}</div>
       </div>
     </div>
-    <div tw="bg-gray-100 p-4 w-1/2">
-      <div>${renderComponentControls(componentsTree, [])}</div>
+    <div tw="text-center py-2 bg-gray-700 text-white text-xs">
+      <a tw="opacity-80 cursor-pointer">
+        ${"Crafted with ❤️ by "}
+        <a
+          tw="text-blue-300 underline hover:text-blue-200"
+          href="https://ezequielschwartzman.org"
+          >Ezequiel</a
+        >${" find "}
+        <a
+          tw="text-blue-300 underline hover:text-blue-200"
+          href="https://github.com/Zequez/component-editor"
+          >source code on Github</a
+        >
+      </a>
     </div>
   </div>`;
 
