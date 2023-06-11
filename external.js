@@ -4,6 +4,7 @@ import htm from "//cdn.skypack.dev/htm";
 import cx from "//cdn.skypack.dev/classnames";
 import { tw, setup } from "//cdn.skypack.dev/twind";
 import { z } from "//esm.run/zod";
+import imm from "https://cdn.jsdelivr.net/npm/immutable@4.3.0/+esm";
 
 setup({
   variants: {
@@ -20,4 +21,4 @@ const html = htm.bind((tag, props, ...children) => {
   return h(tag, props, ...children);
 });
 
-export { html, render, useState, useEffect, useRef, tw, cx, z };
+export { html, render, useState, useEffect, useRef, tw, cx, z, imm };

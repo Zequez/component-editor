@@ -6,26 +6,10 @@ import {
   useEffect,
   useRef,
   z,
+  imm,
 } from "./external.js";
 import { usePersistentState } from "./hooks.js";
-
-const baseComponents = {
-  box: {
-    render: (props, children) => html`<div tw=${props.tw}>Box</div>`,
-    renderControl: (props, setProps) => html`<div tw="flex-grow">
-      <input
-        type="text"
-        tw="bg-white rounded-md text-sm px-1 py-0.5 border border-gray-300 w-full"
-        placeholder="Style directives"
-        value=${props.tw}
-        onInput=${(ev) => setProps({ tw: ev.target.value })}
-      />
-    </div>`,
-  },
-  text: {
-    render: ({ text }) => html`<span>${text}</span>`,
-  },
-};
+import ComponentTree from "./lib/ComponentTree.js";
 
 // const ComponentDefinitionSchema = z.object({
 //   componentType: z.string(),
@@ -33,11 +17,24 @@ const baseComponents = {
 // });
 
 function App(props) {
-  const [reusableComponents, setReusableComponents] = usePersistentState(
-    "reusableComponents",
-    baseComponents
+  // const [reusableComponents, setReusableComponents] = usePersistentState(
+  //   "reusableComponents",
+  //   ComponentbaseComponents
+  // );
+  const [componentsTree, setComponentsTree] = usePersistentState(
+    "components_tree",
+    () => ComponentTree.build(),
+    (v) => v,
+    ComponentTree.fromObject
   );
+
   const [components, setComponents] = usePersistentState("components", []);
+
+  function resetPersistentState() {
+    setComponents([]);
+    setComponentsTree(ComponentTree.build());
+    // setReusableComponents(baseComponents);
+  }
 
   function addComponent(componentType) {
     const newComponentDefinition = {
@@ -48,64 +45,79 @@ function App(props) {
     setComponents([...components, newComponentDefinition]);
   }
 
-  function handleComponentPropsUpdate(index, newProps) {
-    const newComponents = [...components];
-    newComponents[index].props = newProps;
-    setComponents(newComponents);
-    console.log("Changing component props", index, newProps, newComponents);
+  function handleComponentPropsUpdate(newProps, indexes) {
+    setComponentsTree(componentsTree.updateProps(newProps, indexes));
   }
 
-  function removeComponent(index) {
-    setComponents([
-      ...components.slice(0, index),
-      ...components.slice(index + 1),
-    ]);
+  function removeComponent(indexes) {
+    setComponentsTree(componentsTree.deleteChild(indexes));
   }
+
+  function addChild(indexes) {
+    setComponentsTree(componentsTree.addChild(indexes));
+  }
+
+  // console.log(componentsTree);
 
   return html`<div tw="bg-gray-700 h-screen flex">
-    <div tw="bg-gray-100 border-r-2 border-gray-200 w-1/2 p-4">
+    <div tw="bg-gray-100 border-r-2 border-gray-200 w-1/2 p-4 flex flex-col">
       <div
         tw="text-center mb-2 uppercase tracking-wide font-bold text-gray-600"
       >
         Page Preview
       </div>
-      <div tw="bg-white shadow-md border border-gray-300">
-        ${components.map(({ cType, props, children, name }) =>
-          reusableComponents[cType].render(props, children)
-        )}
+      <div tw="bg-white shadow-md border border-gray-300 flex-grow">
+        ${ComponentTree.render(componentsTree)}
       </div>
     </div>
     <div tw="bg-gray-100 p-4 w-1/2">
-      <div tw="space-y-2">
-        ${components.map(
-          ({ cType, props, children }, i) =>
-            html`<div tw="flex">
-              <div
-                tw="bg-green-400 rounded-md px-1 py-0.5 text-white uppercase mr-1 text-sm"
-              >
-                ${cType}
-              </div>
-              <button
-                tw="bg-red-400 hover:bg-red-500 w-6 rounded-md px-1 py-0.5 mr-2 text-white"
-                onClick=${() => removeComponent(i)}
-              >
-                ×
-              </button>
-              <div tw="flex-grow flex">
-                ${reusableComponents[cType].renderControl(props, (newProps) =>
-                  handleComponentPropsUpdate(i, newProps)
-                )}
-              </div>
-            </div>`
-        )}
-      </div>
-      <div tw="mt-4 space-x-2">
-        ${Object.keys(reusableComponents).map((componentType) =>
-          AddComponentButton(componentType, addComponent)
-        )}
-      </div>
+      <div>${renderComponentControls(componentsTree, [])}</div>
     </div>
   </div>`;
+
+  function renderComponentControls(comp, indexes) {
+    return html`<div>
+      <button
+        tw="fixed bottom-0 right-0 bg-red-400 hover:bg-red-300 text-white px-2 py-1 rounded-md mr-1 mb-1"
+        onClick=${() => resetPersistentState()}
+      >
+        Reset state
+      </button>
+      <div tw="flex">
+        <div
+          tw="bg-green-400 rounded-md px-1 py-0.5 text-white uppercase mr-1 text-sm"
+        >
+          ${comp.cType}
+        </div>
+        <button
+          tw="bg-red-400 hover:bg-red-500 w-6 rounded-md px-1 py-0.5 mr-2 text-white"
+          onClick=${() => removeComponent(indexes)}
+        >
+          ×
+        </button>
+        <button
+          tw="bg-yellow-400 hover:bg-yellow-500 w-6 rounded-md px-1 py-0.5 mr-2 text-white scale-x-[-1]"
+          onClick=${() => addChild(indexes)}
+        >
+          ↵
+        </button>
+        <div tw="flex-grow flex">
+          ${ComponentTree.baseComponents[comp.cType].renderControl(
+            comp.props,
+            (newProps) => handleComponentPropsUpdate(newProps, indexes)
+          )}
+        </div>
+      </div>
+
+      ${comp.children.length
+        ? html`<div tw="pl-4 space-y-2 pt-2">
+            ${comp.children.map((comp, i) =>
+              renderComponentControls(comp, [...indexes, i])
+            )}
+          </div>`
+        : null}
+    </div>`;
+  }
 }
 
 function AddComponentButton(componentType, action) {
