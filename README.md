@@ -1,6 +1,6 @@
 # Components Editor
 
-<!-- ![Alt text](/screenshot.png?raw=true "App UI screenshot") -->
+![Alt text](/screenshot.png?raw=true "App UI screenshot")
 
 A visual components editor that runs on Preact and Twind
 
